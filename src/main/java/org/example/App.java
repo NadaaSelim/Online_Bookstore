@@ -1,20 +1,18 @@
 package org.example;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
+import DB.DatabaseConnection;
+import org.bson.Document;
 
 public class App 
 {
     public static void main( String[] args )
     {
-        ConnectionString connectionString = new ConnectionString("mongodb://localhost:27017");
-        MongoClient mongoClient = MongoClients.create(connectionString);
-        MongoDatabase database = mongoClient.getDatabase("student");
+        DatabaseConnection dbCon = new DatabaseConnection();
 
-        for (String name : database.listCollectionNames()) {
-            System.out.println(name);
+        dbCon.insertUser("Nada", "nadaselim", "123456");
+        if(dbCon.doesUserExist("nadaselim")){
+            Document doc =  dbCon.findUser("nadaselim");
+            System.out.println(doc.toJson());
         }
     }
 }

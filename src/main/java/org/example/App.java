@@ -9,7 +9,7 @@ public class App
     {
         DatabaseConnection dbCon = new DatabaseConnection();
 
-        dbCon.insertUser("Nada", "nadaselim", "123456");
+        //dbCon.insertUser("Nada", "nadaselim", "123456");
         if(dbCon.doesUserExist("nadaselim")){
             Document doc =  dbCon.findUser("nadaselim","123456");
             System.out.println(doc.toJson());

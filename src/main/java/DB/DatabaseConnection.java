@@ -17,6 +17,8 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.InsertOneResult;
 
+import java.util.Arrays;
+
 public class DatabaseConnection {
 
     private MongoClient mongoClient;
@@ -91,6 +93,26 @@ public class DatabaseConnection {
     }
 
     //TODO update friends list
+
+    /////////////////////////   CRUD Operations for Book    /////////////////////////
+
+    //TODO add book price and quantity
+    public BsonValue insertBook(String name, String author, String description, String[] genres, ObjectId owner, boolean available){
+
+        MongoCollection<Document> collection = this.database.getCollection("books");
+        // Inserts a new user
+        InsertOneResult result = collection.insertOne(new Document()
+                .append("_id", new ObjectId())
+                .append("name", name)
+                .append("author", author)
+                .append("description", description)
+                .append("genres", Arrays.asList(genres))
+                .append("owner", owner)
+                .append("available",available));
+
+        return(result.getInsertedId());
+    }
+
 
 
 

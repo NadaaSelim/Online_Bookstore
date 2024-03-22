@@ -4,17 +4,19 @@ package DB;
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.mongodb.client.*;
+import com.mongodb.client.model.Projections;
+import com.mongodb.client.result.DeleteResult;
 import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.json.JsonObject;
 import org.bson.types.ObjectId;
 
 import com.mongodb.ConnectionString;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.InsertOneResult;
 
 import java.util.Arrays;
@@ -67,52 +69,111 @@ public class DatabaseConnection {
         return doc;
     }
 
-    public List<Document> getAllBooks() {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'getAllBooks'");
-    }
-
-    public void addBook(String username, String title, String author, String genre, float price, int quantity) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'addBook'");
-    }
-
-    public void removeBook(String username, String booktitle) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'removeBook'");
-    }
-
-    public boolean doesBookExist(String username, String booktitle) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'doesBookExist'");
-    }
-
-    public List<Document> search(String category, String name) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'search'");
+    private ObjectId getUserId(String username) {
+        MongoCollection<Document> collection = this.database.getCollection("users");
+        Document doc = collection.find(eq("username", username)).first();
+        ObjectId id = doc.getObjectId("_id");
+        return id;
     }
 
     //TODO update friends list
 
     /////////////////////////   CRUD Operations for Book    /////////////////////////
-
-    //TODO add book price and quantity
-    public BsonValue insertBook(String name, String author, String description, String[] genres, ObjectId owner, boolean available){
+    public List<String> getAllBooks() {
 
         MongoCollection<Document> collection = this.database.getCollection("books");
-        // Inserts a new user
-        InsertOneResult result = collection.insertOne(new Document()
-                .append("_id", new ObjectId())
-                .append("name", name)
-                .append("author", author)
-                .append("description", description)
-                .append("genres", Arrays.asList(genres))
-                .append("owner", owner)
-                .append("available",available));
+        Bson projectionFields = Projections.fields(Projections.excludeId());
+        FindIterable<Document> docs = collection.find().projection(projectionFields);
+        MongoCursor<Document> cursor =  docs.iterator();
+        List<String> list = new ArrayList<String>();
 
-        return(result.getInsertedId());
+        while(cursor.hasNext())
+            list.add(cursor.next().toJson());
+        return list;
+
     }
 
+    public boolean insertBook(String title, String author, String description, String[] genres,
+                                String owner, boolean available, float price, int quantity){
+
+        // TODO validate that the book doesn't already exist for the user
+        MongoCollection<Document> collection = this.database.getCollection("books");
+        Document doc = collection.find(and(eq("owner",owner), eq("title",title))).first();
+        boolean res;
+        if(doc != null){
+            res = false;
+        }
+        else {
+            InsertOneResult result = collection.insertOne(new Document()
+                    .append("_id", new ObjectId())
+                    .append("title", title)
+                    .append("author", author)
+                    .append("description", description)
+                    .append("genres", Arrays.asList(genres))
+                    .append("owner", owner)
+                    .append("available", available)
+                    .append("price", price)
+                    .append("quantity", quantity));
+            res = true;
+        }
+
+        return(res);
+    }
+
+    public boolean removeBook(String owner, String title) {
+        MongoCollection<Document> collection = this.database.getCollection("books");
+        Bson query = and(eq("owner", owner),eq("title", title));
+        DeleteResult result = collection.deleteOne(query);
+
+        boolean res;
+        if(result.getDeletedCount() == 0){
+            res = false;
+        }
+        else{
+            res = true;
+        }
+
+        return res;
+
+    }
+
+    public boolean doesBookExist(String owner, String title) {
+        MongoCollection<Document> collection = this.database.getCollection("books");
+        Document doc = collection.find(and(eq("owner", owner),eq("title", title))).first();
+        boolean res;
+        if(doc == null){
+            res = false;
+        }
+        else {
+            res = true;
+        }
+        return res;
+    }
+
+    public boolean isBookAvailable(String username, String title){
+        MongoCollection<Document> collection = this.database.getCollection("books");
+
+        Bson projectionFields = Projections.fields(Projections.include("available"),Projections.excludeId());
+        Document doc = collection.find(and(eq("owner", username),eq("title", title)))
+                .projection(projectionFields).first();
+
+        boolean res;
+        if(doc == null){
+            res = false;
+        }
+        else{
+            String s = doc.get("available").toString();
+            res = !s.equals("false");
+        }
+        return res;
+
+    }
+
+    //TODO search by any key and value pair
+    public List<Document> search(String key, String value) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'search'");
+    }
 
 
 

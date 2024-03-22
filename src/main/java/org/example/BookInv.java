@@ -12,6 +12,9 @@ import DB.DatabaseConnection;
 
 public class BookInv {
     private DatabaseConnection db=new DatabaseConnection();
+
+    // TODO uncomment this
+    /*
     public List<String[]> browse(){
         List<Document> booksDoc = db.getAllBooks();
         List<String[]> resultList = new ArrayList<>();
@@ -21,6 +24,8 @@ public class BookInv {
         }
         return resultList;
     }
+
+     */
 
     public List<String[]> search(String res[]){
         String category=res[0]; String name=res[1];
@@ -39,7 +44,8 @@ public class BookInv {
         String author=input[2];String genre=input[3];
         float price=Float.parseFloat(input[4]);
         int quantity = Integer.parseInt(input[5]);
-        db.addBook(username,title,author,genre,price,quantity);
+        // TODO uncomment this
+        //db.insertBook(username,title,author,genre,price,quantity);
     }
 
     public void remove(String res[]) throws Exception{

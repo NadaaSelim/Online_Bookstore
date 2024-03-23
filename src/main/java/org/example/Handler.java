@@ -97,7 +97,7 @@ public class Handler implements Runnable {
             switch(input){
                 // TODO uncomment this
                 //case "browse": {return bookInv.browse();}
-                case "search" : return bookInv.search(res);
+                //case "search" : return bookInv.search(res);
                 case "add":  bookInv.add(res);out.write("Book Added\n");out.flush();
                 case "remove": bookInv.remove(res); out.write("Book Removed\n");out.flush();
 

@@ -25,11 +25,13 @@ public class BookInv {
         return resultList;
     }
 
-     */
+
+
 
     public List<String[]> search(String res[]){
         String category=res[0]; String name=res[1];
-        List<Document> booksDoc = db.search(category,name);
+        // TODO change this to List<String>
+        List<Document> booksDoc = db.searchBooksBy(category,name);
         List<String[]> resultList = new ArrayList<>();
         
         for (Document document : booksDoc) {
@@ -37,6 +39,8 @@ public class BookInv {
         }
         return resultList;
     }
+
+     */
     public void add(String[] input){
     
         String username=input[0];

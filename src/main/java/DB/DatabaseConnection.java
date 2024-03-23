@@ -170,9 +170,16 @@ public class DatabaseConnection {
     }
 
     //TODO search by any key and value pair
-    public List<Document> search(String key, String value) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'search'");
+    public List<String> searchBooksBy(String key, String value) {
+        MongoCollection<Document> collection = this.database.getCollection("books");
+        Bson projectionFields = Projections.fields(Projections.excludeId());
+        FindIterable<Document> docs = collection.find(eq(key,value)).projection(projectionFields);
+        MongoCursor<Document> cursor =  docs.iterator();
+        List<String> list = new ArrayList<String>();
+
+        while(cursor.hasNext())
+            list.add(cursor.next().toJson());
+        return list;
     }
 
 

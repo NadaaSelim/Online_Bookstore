@@ -29,6 +29,9 @@ public class DatabaseConnection {
     private ConnectionString connectionString;
     private MongoDatabase database;
 
+
+
+
     public DatabaseConnection(){
         this.connectionString = new ConnectionString("mongodb://localhost:27017");
         this.mongoClient = MongoClients.create(connectionString);
@@ -213,6 +216,14 @@ public class DatabaseConnection {
         return list;
     }
 
+    public void close() {
+        if (mongoClient != null) {
+            mongoClient.close();
+        }
+    }
+    public MongoDatabase getDatabase() {
+        return database;
+    }
 
     /////////////////////////   CRUD Operations for Request    /////////////////////////
 

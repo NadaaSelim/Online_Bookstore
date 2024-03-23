@@ -17,12 +17,13 @@ public class App
         DatabaseConnection dbCon = new DatabaseConnection();
 
 
-        /*
-        //dbCon.insertUser("Nada", "nadaselim", "123456");
+
+        dbCon.insertUser("Nada", "nadaselim", "123456");
         if(dbCon.doesUserExist("nadaselim")){
             Document doc =  dbCon.findUser("nadaselim","123456");
             System.out.println(doc.toJson());
         }
+
 
         String [] genres = new String[]{"Fiction", "Magical Realism"};
         dbCon.insertBook("Kafka on the shore", "Haruki Murakami",
@@ -57,12 +58,14 @@ public class App
             System.out.println();
         }
 
-         */
 
 
         //System.out.println(dbCon.doesBookExist("nadaselim","Kafka on the shore"));
         //System.out.println(dbCon.isBookAvailable("nadaselim","Kafka on the shore"));
         //System.out.println(dbCon.searchBooksBy("author","Haruki Murakami"));
+
+
+
 
 
 

@@ -1,6 +1,7 @@
 package org.example;
 
 import java.net.*;
+import java.util.List;
 import java.io.*;
 
 public class Client {
@@ -29,13 +30,10 @@ public class Client {
             throw new RuntimeException(e);
         }
 
-        String serverResponse;
-                while ((serverResponse = serverInput.readLine()) != null) {
-                    System.out.println("Server: " + serverResponse);
-                    if (serverResponse.isEmpty()) {
-                        break; // Exit loop when empty line is encountered
-                    }
-                }
+         readListFromServer();
+                // for (String str : serverResponse) {
+                //     System.out.println(str);
+                // }
 
         String line="";
         while (!line.equals("Over"))
@@ -43,10 +41,12 @@ public class Client {
             try
             {
                 
-                    line = input.readLine();
+                
+                line = input.readLine();
                 out.write(line); out.newLine();out.flush();
-                System.out.println(serverInput.readLine());
-            }
+                readListFromServer();
+                
+                }
             catch(IOException i)
             {
                 System.out.println(i);
@@ -64,6 +64,23 @@ public class Client {
             System.out.println(i);
         }
     }
+
+    private void readListFromServer() throws IOException {
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = serverInput.readLine()) != null) {
+            if (line.isEmpty()||line.isBlank()) {
+                break; // Exit the loop if the end of data is signaled
+            }
+    
+        System.out.println(line);
+
+            //sb.append(line).append(System.lineSeparator());
+        }
+       // return List.of(data.split("\\r?\\n"));
+    }
+
+
 
     public static void main(String[] args) throws IOException {
         Client client = new Client("127.0.0.1",5000);

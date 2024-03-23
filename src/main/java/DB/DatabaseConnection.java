@@ -9,7 +9,9 @@ import java.util.List;
 
 import com.mongodb.client.*;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.Updates;
 import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.conversions.Bson;
@@ -94,7 +96,7 @@ public class DatabaseConnection {
     }
 
     public boolean insertBook(String title, String author, String description, String[] genres,
-                                String owner, boolean available, float price, int quantity){
+                                String owner, float price, int quantity){
 
         // TODO validate that the book doesn't already exist for the user
         MongoCollection<Document> collection = this.database.getCollection("books");
@@ -111,7 +113,6 @@ public class DatabaseConnection {
                     .append("description", description)
                     .append("genres", Arrays.asList(genres))
                     .append("owner", owner)
-                    .append("available", available)
                     .append("price", price)
                     .append("quantity", quantity));
             res = true;
@@ -150,10 +151,16 @@ public class DatabaseConnection {
         return res;
     }
 
+    public int bookQuantity(String owner, String title) {
+        MongoCollection<Document> collection = this.database.getCollection("books");
+        Document doc = collection.find(and(eq("owner", owner),eq("title", title))).first();
+        return doc.getInteger("quantity");
+    }
+
     public boolean isBookAvailable(String username, String title){
         MongoCollection<Document> collection = this.database.getCollection("books");
 
-        Bson projectionFields = Projections.fields(Projections.include("available"),Projections.excludeId());
+        Bson projectionFields = Projections.fields(Projections.include("quantity"),Projections.excludeId());
         Document doc = collection.find(and(eq("owner", username),eq("title", title)))
                 .projection(projectionFields).first();
 
@@ -162,14 +169,38 @@ public class DatabaseConnection {
             res = false;
         }
         else{
-            String s = doc.get("available").toString();
-            res = !s.equals("false");
+            int count = doc.getInteger("quantity");
+            if(count > 0){
+                res = true;
+            }
+            else{
+                res = false;
+            }
         }
         return res;
 
     }
 
-    //TODO search by any key and value pair
+    public boolean decrementQuantity(String username, String title){
+        MongoCollection<Document> collection = this.database.getCollection("books");
+        Document query = new Document().append("title",title).append("owner",username);
+
+        int count = this.bookQuantity(username,title);
+
+        Bson updates = Updates.set("quantity", count-1);
+
+        UpdateResult result = collection.updateOne(query, updates);
+
+        boolean res;
+        if(result.getModifiedCount() == 1){
+            res = true;
+        }
+        else{
+            res = false;
+        }
+
+        return res;
+    }
     public List<String> searchBooksBy(String key, String value) {
         MongoCollection<Document> collection = this.database.getCollection("books");
         Bson projectionFields = Projections.fields(Projections.excludeId());
@@ -182,6 +213,71 @@ public class DatabaseConnection {
         return list;
     }
 
+
+    /////////////////////////   CRUD Operations for Request    /////////////////////////
+
+    private boolean doesRequestExist(String borrowerUsername, String lenderUsername, String title){
+        MongoCollection<Document> collection = this.database.getCollection("requests");
+        Document doc = collection.find(and(eq("lender", lenderUsername),eq("borrower", borrowerUsername),
+                eq("title",title))).first();
+        boolean res;
+        if(doc == null){
+            res = false;
+        }
+        else {
+            res = true;
+        }
+        return res;
+    }
+
+    /*
+        the status of a request is:
+        1 : accepted
+        0 : pending
+        -1 : rejected
+     */
+    public boolean insertRequest(String borrowerUsername, String lenderUsername, String title){
+        boolean res;
+        if(this.doesUserExist(borrowerUsername) && this.doesBookExist(lenderUsername,title)
+        && this.isBookAvailable(lenderUsername, title) && !this.doesRequestExist(borrowerUsername,lenderUsername,title)){
+            MongoCollection<Document> collection = this.database.getCollection("requests");
+            InsertOneResult result = collection.insertOne(new Document()
+                    .append("_id", new ObjectId())
+                    .append("title", title)
+                    .append("lender", lenderUsername)
+                    .append("borrower", borrowerUsername)
+                    .append("status", 0));
+            res = true;
+        }
+        else{
+            res = false;
+        }
+
+        return(res);
+    }
+
+
+
+    public boolean acceptRequest(String borrowerUsername, String lenderUsername, String title){
+        MongoCollection<Document> collection = this.database.getCollection("requests");
+        Document query = new Document().append("title",title).append("lender",lenderUsername)
+                .append("borrower",borrowerUsername);
+
+        Bson updates = Updates.set("status", 1);
+
+        UpdateResult result = collection.updateOne(query, updates);
+        this.decrementQuantity(lenderUsername,title);
+        boolean res;
+        if(result.getModifiedCount() == 1){
+            res = true;
+        }
+        else{
+            res = false;
+        }
+
+        return res;
+
+    }
 
 
 }

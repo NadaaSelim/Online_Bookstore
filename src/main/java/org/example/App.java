@@ -70,6 +70,8 @@ public class App
         System.out.println(dbCon.insertRequest("janaselim","nadaselim", "The Stranger"));
 
          */
+        System.out.println(dbCon.acceptRequest("janaselim","nadaselim", "The Stranger"));
+
 
 
 

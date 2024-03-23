@@ -62,7 +62,7 @@ public class BookInv {
         float price=Float.parseFloat(input[4]);
         int quantity = Integer.parseInt(input[5]);
         boolean insertion = db.insertBook(title,  author,  description, genres,
-         username, true,  price,  quantity);
+         username,  price,  quantity);
         if(!insertion)
             throw new Exception("Book already exists in user's library");
         }

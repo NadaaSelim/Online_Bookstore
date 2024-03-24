@@ -9,7 +9,7 @@ public class testReview extends TestCase {
         Review review = new Review("good paper quality",5,"lama");
 
         // Call the addReview method and assert its result
-        assertTrue(review.addReview("The Stranger","nadaselim",new DatabaseConnection()));
+        assertTrue(review.addReview("Norwegian Wood","nadaselim",new DatabaseConnection()));
     }
     public void testdisplay(){
         DisplayBooks ui = new DisplayBooks();

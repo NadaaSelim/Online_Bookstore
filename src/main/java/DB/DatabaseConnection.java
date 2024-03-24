@@ -117,7 +117,8 @@ public class DatabaseConnection {
                     .append("genres", Arrays.asList(genres))
                     .append("owner", owner)
                     .append("price", price)
-                    .append("quantity", quantity));
+                    .append("quantity", quantity)
+                    .append("reviews", Arrays.asList()));
             res = true;
         }
 

@@ -71,6 +71,12 @@ public class App
 
          */
 
+        String [] genres = new String[]{"Fiction", "Romance"};
+        dbCon.insertBook("Norwegian Wood", "Haruki Murakami",
+                "Norwegian Wood by Haruki Murakami is a story set in late-1960s Japan, detailing the romantic exploits of Toru Watanabe, in particular his relationship with two women, Naoko and Midori Kobayashi."
+                ,genres, "nadaselim",140,2);
+
+
 
 
 

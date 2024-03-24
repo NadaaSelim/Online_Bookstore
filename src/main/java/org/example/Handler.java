@@ -1,5 +1,11 @@
 package org.example;
 
+import DB.DatabaseConnection;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -10,12 +16,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+
 public class Handler implements Runnable {
     private Socket clientSocket;
     private BufferedReader in;
     private BufferedWriter out;
     private UserAuth userAuth;
     private BookInv bookInv;
+
     // TODO class user??
     private String username=null;
     
@@ -27,7 +35,12 @@ public class Handler implements Runnable {
     List<String> formatStandard = List.of("Menu of commands with formats",
             "1- browse","2- search,[title/author/genre],[name]",
             "3- add,[title],[author],[desc],[genre1 genre2],[price],[quantity]",
-            "4- remove,title");
+            "4- remove,title",
+            "5- request,[title],[lender]",
+            "6- show_requests",
+            "7- accept,[title],[borrower]",
+            "8- reject,[title],[borrower]",
+            "9- my_requests");
 
 
     public Handler(Socket clientSocket, BufferedReader in, BufferedWriter out) {
@@ -117,20 +130,94 @@ public class Handler implements Runnable {
                  in.close();} 
         catch(IOException e){e.printStackTrace();}   
         }
+
+
+        private List<String> formatRequest(List<String> booksList, boolean forMe){
+            int i = 1;
+            List<String> formatedList = new ArrayList<>();
+            for(String s: booksList){
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(s, JsonObject.class);
+                String requ = "";
+                requ = requ + i + "- Title: " + jsonObject.get("title").getAsString();
+                if(forMe){
+                    requ = requ + "   Borrower: " + jsonObject.get("borrower").getAsString();
+                }
+                else{
+                    requ = requ + "   Lender: " + jsonObject.get("lender").getAsString();
+                }
+
+                int status = jsonObject.get("status").getAsInt();
+                if(status == 0)
+                    requ += "   Status: Pending";
+                else if(status == 1)
+                    requ += "   Status: Accepted";
+                else if(status == -1)
+                    requ += "   Status: Rejected";
+                formatedList.add(requ);
+                i++;
+            }
+
+            return formatedList;
+        }
     
         public List<String> handleinput(String input) {
             String inputParsed[]= input.split(",");
             String[] res = Arrays.copyOfRange(inputParsed, 1, inputParsed.length);
 
-            System.out.println(Arrays.toString(res)+'\t'+Arrays.toString(inputParsed));            
+            System.out.println(Arrays.toString(res)+'\t'+Arrays.toString(inputParsed));
+
             try{
                 switch(inputParsed[0]){
 
-                // TODO uncomment this
-                case "browse": {return bookInv.browse();}
-                case "search" : return bookInv.search(res);
-                case "add":  bookInv.add(this.username,res); return List.of("Book Added");
-                case "remove": bookInv.remove(this.username,res[0]); return List.of("Book Removed");
+                // TODO add options
+                    case "browse": {return bookInv.browse();}
+                    case "search" : return bookInv.search(res);
+                    case "add":  bookInv.add(this.username,res); return List.of("Book Added");
+                    case "remove": bookInv.remove(this.username,res[0]); return List.of("Book Removed");
+                    case "request":{
+                        Request req = new Request(res[0],res[1],this.username);
+                        if(req.addToDB())
+                            return List.of("Request Added");
+                        else
+                            throw new RuntimeException("Error couldn't add your request");
+                    }
+                    case "show_requests":{
+                        DatabaseConnection dbCon = new DatabaseConnection();
+                        List<String> booksList = dbCon.getAllRequestsForMe(this.username);
+                        dbCon.close();
+                        List<String> formatedList = this.formatRequest(booksList, true);
+
+                        return formatedList;
+
+                    }
+                    case "accept":{
+                        Request req = new Request(res[0],this.username,res[1]);
+                        if(req.accept()){
+                            return List.of("Request Accepted");
+                        }
+                        else{
+                            throw new RuntimeException("Error couldn't accept that request");
+                        }
+                    }
+                    case "reject":{
+                        Request req = new Request(res[0],this.username,res[1]);
+                        if(req.reject()){
+                            return List.of("Request Rejected");
+                        }
+                        else{
+                            throw new RuntimeException("Error couldn't reject that request");
+                        }
+                    }
+                    case "my_requests":{
+                        DatabaseConnection dbCon = new DatabaseConnection();
+                        List<String> booksList = dbCon.getMyRequests(this.username);
+                        dbCon.close();
+                        List<String> formatedList = this.formatRequest(booksList, false);
+
+                        return formatedList;
+                    }
+
 
             }
         }catch(Exception e){                    

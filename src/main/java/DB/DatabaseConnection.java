@@ -205,6 +205,27 @@ public class DatabaseConnection {
 
         return res;
     }
+
+    public boolean incrementQuantity(String username, String title){
+        MongoCollection<Document> collection = this.database.getCollection("books");
+        Document query = new Document().append("title",title).append("owner",username);
+
+        int count = this.bookQuantity(username,title);
+
+        Bson updates = Updates.set("quantity", count+1);
+
+        UpdateResult result = collection.updateOne(query, updates);
+
+        boolean res;
+        if(result.getModifiedCount() == 1){
+            res = true;
+        }
+        else{
+            res = false;
+        }
+
+        return res;
+    }
     public List<String> searchBooksBy(String key, String value) {
         MongoCollection<Document> collection = this.database.getCollection("books");
         Bson projectionFields = Projections.fields(Projections.excludeId());
@@ -248,10 +269,12 @@ public class DatabaseConnection {
         0 : pending
         -1 : rejected
      */
+
     public boolean insertRequest(String borrowerUsername, String lenderUsername, String title){
         boolean res;
         if(this.doesUserExist(borrowerUsername) && this.doesBookExist(lenderUsername,title)
-        && this.isBookAvailable(lenderUsername, title) && !this.doesRequestExist(borrowerUsername,lenderUsername,title)){
+        && this.isBookAvailable(lenderUsername, title) && !this.doesRequestExist(borrowerUsername,lenderUsername,title)
+        && !lenderUsername.equals(borrowerUsername)){
             MongoCollection<Document> collection = this.database.getCollection("requests");
             InsertOneResult result = collection.insertOne(new Document()
                     .append("_id", new ObjectId())
@@ -288,6 +311,58 @@ public class DatabaseConnection {
         }
 
         return res;
+
+    }
+
+
+    public boolean rejectRequest(String borrowerUsername, String lenderUsername, String title){
+        MongoCollection<Document> collection = this.database.getCollection("requests");
+        Document query = new Document().append("title",title).append("lender",lenderUsername)
+                .append("borrower",borrowerUsername);
+
+        Bson updates = Updates.set("status", -1);
+
+        UpdateResult result = collection.updateOne(query, updates);
+        this.incrementQuantity(lenderUsername,title);
+        boolean res;
+        if(result.getModifiedCount() == 1){
+            res = true;
+        }
+        else{
+            res = false;
+        }
+
+        return res;
+
+    }
+
+    // TODO list for lender
+    public List<String> getAllRequestsForMe(String lender) {
+
+        MongoCollection<Document> collection = this.database.getCollection("requests");
+        Bson projectionFields = Projections.fields(Projections.excludeId());
+        FindIterable<Document> docs = collection.find(eq("lender",lender)).projection(projectionFields);
+        MongoCursor<Document> cursor =  docs.iterator();
+        List<String> list = new ArrayList<String>();
+
+        while(cursor.hasNext())
+            list.add(cursor.next().toJson());
+        return list;
+
+    }
+    // TODO list my requests
+
+    public List<String> getMyRequests(String borrower) {
+
+        MongoCollection<Document> collection = this.database.getCollection("requests");
+        Bson projectionFields = Projections.fields(Projections.excludeId());
+        FindIterable<Document> docs = collection.find(eq("borrower",borrower)).projection(projectionFields);
+        MongoCursor<Document> cursor =  docs.iterator();
+        List<String> list = new ArrayList<String>();
+
+        while(cursor.hasNext())
+            list.add(cursor.next().toJson());
+        return list;
 
     }
 

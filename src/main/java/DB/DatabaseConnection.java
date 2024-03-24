@@ -336,7 +336,7 @@ public class DatabaseConnection {
 
     }
 
-    // TODO list for lender
+    // requests sent for my books
     public List<String> getAllRequestsForMe(String lender) {
 
         MongoCollection<Document> collection = this.database.getCollection("requests");
@@ -350,8 +350,9 @@ public class DatabaseConnection {
         return list;
 
     }
-    // TODO list my requests
 
+
+    // requests that I have sent
     public List<String> getMyRequests(String borrower) {
 
         MongoCollection<Document> collection = this.database.getCollection("requests");

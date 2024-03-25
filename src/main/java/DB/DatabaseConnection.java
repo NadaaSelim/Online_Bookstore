@@ -383,4 +383,35 @@ public class DatabaseConnection {
     }
 
 
+    public long getBorrowedBooksCnt(){
+        MongoCollection<Document> collection = database.getCollection("requests");
+        Document query = new Document("status", 1);
+        long count = collection.countDocuments(query);
+        return count;
+    }
+
+    public long getAllBooksCnt(){
+        MongoCollection<Document> collection = database.getCollection("books");
+        Document groupStage = new Document("$group",
+                new Document("_id", null)
+                .append("totalQuantity", new Document("$sum", "$quantity")));
+        
+                Document result = collection.aggregate(Arrays.asList(groupStage)).first();
+
+        return result.getInteger("totalQuantity", 0);
+
+    }
+
+    public List<Long> getAllReqsCnt(){
+        MongoCollection<Document> collection = database.getCollection("requests");
+        List<Long> res= new ArrayList<>();
+        for(int i=1;i>=-1;i--){
+            Document query = new Document("status", i);
+            long count = collection.countDocuments(query);
+            res.add(count);
+        }
+        return res;
+    }
+
+
 }

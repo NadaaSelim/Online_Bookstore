@@ -24,15 +24,16 @@ public class BookInv {
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(s, JsonObject.class);
            // String book = ("////////////////////////////////////////////");
-            String book = i+("- Title: "+jsonObject.get("title").getAsString());
+            String book = (i++)+("- Title: "+jsonObject.get("title").getAsString());
             book+=(" Author: "+jsonObject.get("author").getAsString());
             book+=(" Price: "+jsonObject.get("price").getAsString());
             JsonArray jsonArray = jsonObject.getAsJsonArray("genres");
-            book+=("Genres: [");
+            book+=(" Genres: [ ");
             for (JsonElement element : jsonArray) {
-                book+=(element.getAsString());
+                book+=(element.getAsString()+' ');
             }
             book+="]";
+            book+=(" Owner: "+jsonObject.get("owner").getAsString());
             res.add(book);
         }
         return res;

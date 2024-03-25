@@ -3,6 +3,7 @@ package org.example;
 import java.net.*;
 import java.util.List;
 import java.io.*;
+import java.util.Scanner;
 
 public class Client {
     // initialize socket and input output streams
@@ -36,13 +37,14 @@ public class Client {
                 // }
 
         String line="";
-        while (!line.equals("Over"))
+        while (!line.equals("/end"))
         {
             try
             {
                 
                 
                 line = input.readLine();
+                if(line.equals("message")){this.message();}
                 out.write(line); out.newLine();out.flush();
                 readListFromServer();
                 
@@ -80,6 +82,41 @@ public class Client {
        // return List.of(data.split("\\r?\\n"));
     }
 
+    public void message() throws IOException {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Enter username: ");
+        String username = scanner.nextLine();
+
+        Socket clientSocket = new Socket("127.0.0.1", 5001);
+
+        System.out.println("Connected to server!");
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+
+        // Send username to server
+        out.println(username);
+
+        // TODO stop when /end
+        new Thread(() -> {
+            while (true) {
+                String message = scanner.nextLine();
+                out.println(message);
+            }
+        }).start();
+
+        while (true) {
+            String message = in.readLine();
+            if (message == null) {
+                break;
+            }
+
+            System.out.println(message);
+        }
+
+        clientSocket.close();
+    }
 
 
     public static void main(String[] args) throws IOException {

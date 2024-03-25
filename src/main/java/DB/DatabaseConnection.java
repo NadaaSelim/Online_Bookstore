@@ -48,7 +48,8 @@ public class DatabaseConnection {
                 .append("_id", new ObjectId())
                 .append("name", name)
                 .append("username", username)
-                .append("password", password));
+                .append("password", password)
+                .append("friends", Arrays.asList()));
 
         return(result.getInsertedId());
     }
@@ -226,6 +227,8 @@ public class DatabaseConnection {
 
         return res;
     }
+
+    // TODO change for genre
     public List<String> searchBooksBy(String key, String value) {
         MongoCollection<Document> collection = this.database.getCollection("books");
         Bson projectionFields = Projections.fields(Projections.excludeId());
@@ -299,7 +302,19 @@ public class DatabaseConnection {
                 .append("borrower",borrowerUsername);
 
         Bson updates = Updates.set("status", 1);
-
+        MongoCollection<Document> users = this.database.getCollection("users");
+        Document lender = users.find(eq("username",lenderUsername)).first();
+        Document borrower = users.find(eq("username",borrowerUsername)).first();
+        List<String> lenderFriends = (List<String>) lender.get("friends");
+        List<String> borrowerFriends = (List<String>) borrower.get("friends");
+        if(!lenderFriends.contains(borrowerUsername)){
+            lenderFriends.add(borrowerUsername);
+            borrowerFriends.add(lenderUsername);
+        }
+        Bson lenderUpdates = Updates.set("friends", lenderFriends);
+        Bson borrowerUpdates = Updates.set("friends", borrowerFriends);
+        users.updateOne(eq("username",lenderUsername),lenderUpdates);
+        users.updateOne(eq("username",borrowerUsername),borrowerUpdates);
         UpdateResult result = collection.updateOne(query, updates);
         this.decrementQuantity(lenderUsername,title);
         boolean res;

@@ -23,6 +23,7 @@ public class Handler implements Runnable {
     private BufferedWriter out;
     private UserAuth userAuth;
     private BookInv bookInv;
+    private DisplayBooks display;
 
     // TODO class user??
     private String username=null;
@@ -40,13 +41,16 @@ public class Handler implements Runnable {
             "6- show_requests",
             "7- accept,[title],[borrower]",
             "8- reject,[title],[borrower]",
-            "9- my_requests");
+            "9- my_requests",
+            "10- display by rating",
+            "11- display by genre,[genre]");
 
 
     public Handler(Socket clientSocket, BufferedReader in, BufferedWriter out) {
         this.clientSocket = clientSocket;
-        this.in = in; userAuth=new UserAuth(); bookInv=new BookInv();
+        this.in = in; userAuth=new UserAuth(); bookInv=new BookInv();this.display=new DisplayBooks();
         this.out = out;
+
     }
 
     public void writeToClient(List<String> outputToClient) throws IOException{
@@ -216,6 +220,13 @@ public class Handler implements Runnable {
                         List<String> formatedList = this.formatRequest(booksList, false);
 
                         return formatedList;
+                    }
+                    case "display by rating":{
+                        DatabaseConnection dbCon = new DatabaseConnection();
+                        return display.displayBooksWithRating(dbCon);
+                    }
+                    case "display by genre":{
+
                     }
 
 

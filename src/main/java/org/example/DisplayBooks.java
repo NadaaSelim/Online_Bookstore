@@ -37,6 +37,8 @@ public class DisplayBooks {
        2- sort them according to rating
 
      */
+
+    //TODO remove NaN??
     public List<String> displayBooksWithRating(DatabaseConnection dbc){
 
         MongoCollection<Document> books = dbc.getDatabase().getCollection("books");
@@ -56,11 +58,11 @@ public class DisplayBooks {
         }
         List<Map.Entry<Document, Double>> sortedBooks= new ArrayList<>(bookRatings.entrySet());
         sortedBooks.sort(Comparator.comparing(Map.Entry::getValue, Comparator.reverseOrder()));
-
+        int count = 1;
         for (Map.Entry<Document, Double> entry : sortedBooks) {
 
-            booksList.add("Overall Rating: " + entry.getValue()+"\n\n"+Book(entry.getKey()) );
-
+            booksList.add("("+count+") \nOverall Rating: " + entry.getValue()+"\n\n"+Book(entry.getKey()) );
+            count++;
 
         }
         // Close the cursor and MongoDB connection
@@ -109,6 +111,7 @@ public class DisplayBooks {
 
     //TODO display by genre
     public void  displayByGenre(DatabaseConnection dbc ,String genre){
+
 
     }
     //ToDO display by mostly borrowed from mesh lzm

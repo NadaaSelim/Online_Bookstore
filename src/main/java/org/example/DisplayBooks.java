@@ -1,14 +1,11 @@
 package org.example;
 
 import DB.DatabaseConnection;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Projections;
 import org.bson.Document;
-import org.bson.types.ObjectId;
-
-import javax.print.Doc;
 import java.util.*;
 
 public class DisplayBooks {
@@ -41,32 +38,14 @@ public class DisplayBooks {
     //TODO remove NaN??
     public List<String> displayBooksWithRating(DatabaseConnection dbc){
 
-        MongoCollection<Document> books = dbc.getDatabase().getCollection("books");
-        MongoCursor<Document> cursor = books.find().iterator();
+        MongoCollection<Document> bookscollection = dbc.getDatabase().getCollection("books");
+
+        List<Document> books = bookscollection.find().into(new ArrayList<>());
+
         List<String> booksList = new ArrayList<>();
-        Map<Document,Double> bookRatings = new HashMap<>();
 
+        booksList = sortByrating(books);
 
-        while (cursor.hasNext()) {
-
-            Document book = cursor.next();
-
-            bookRatings.put(book,overallRating(book));
-
-            System.out.println(overallRating(book));
-
-        }
-        List<Map.Entry<Document, Double>> sortedBooks= new ArrayList<>(bookRatings.entrySet());
-        sortedBooks.sort(Comparator.comparing(Map.Entry::getValue, Comparator.reverseOrder()));
-        int count = 1;
-        for (Map.Entry<Document, Double> entry : sortedBooks) {
-
-            booksList.add("("+count+") \nOverall Rating: " + entry.getValue()+"\n\n"+Book(entry.getKey()) );
-            count++;
-
-        }
-        // Close the cursor and MongoDB connection
-        cursor.close();
         dbc.close();
         return booksList;
 
@@ -77,6 +56,8 @@ public class DisplayBooks {
 
         String display ="Title: "+book.getString("title")
                 +"\nAuthor: "+book.getString("author")
+                +"\nDescription: "+book.getString("description")
+                +"\nGenres: "+book.getList("genres",String.class)
                 +"\nOwner: "+book.getString("owner")
                 +"\nPrice: "+book.getDouble("price")
                 +"\nQuantity: "+book.getInteger("quantity")
@@ -109,13 +90,77 @@ public class DisplayBooks {
         return reviews;
     }
 
-    //TODO display by genre
-    public void  displayByGenre(DatabaseConnection dbc ,String genre){
+    //TODO display by genre listed by their current review
+    public List<String>  displayByGenre(DatabaseConnection dbc , String genre) throws Exception {
+
+        MongoCollection<Document> books = dbc.getDatabase().getCollection("books");
+
+        List<Document> results = books.find(Filters.elemMatch("genres", Filters.eq("$eq", genre)))
+                .projection(Projections.excludeId()).into(new ArrayList<>());
+
+        List<String> booksList;
+        if (results != null) {
+
+            booksList = sortByrating(results);
+        } else {
+            throw new Exception("This genre does not exist");
+        }
+
+        dbc.close();
+        return booksList;
+
+    }
+
+    public List<String> sortByrating(List<Document> books){
+
+        List<String> booksList = new ArrayList<>();
+        Map<Document,Double> bookRatings = new HashMap<>();
+
+
+        for(Document book:books){
+            bookRatings.put(book,overallRating(book));
+
+            System.out.println(overallRating(book));
+        }
+
+
+        List<Map.Entry<Document, Double>> sortedBooks= new ArrayList<>(bookRatings.entrySet());
+        sortedBooks.sort(Comparator.comparing(Map.Entry::getValue, Comparator.reverseOrder()));
+        int count = 1;
+        for (Map.Entry<Document, Double> entry : sortedBooks) {
+
+            booksList.add("("+count+") \nOverall Rating: " + entry.getValue()+"\n\n"+Book(entry.getKey()) );
+            count++;
+
+        }
+        return booksList;
+    }
+
+
+    //TODO display reviews for a book and overall  rating
+    public String displayReviews(DatabaseConnection dbc ,String title,String owner) throws Exception{
+
+        MongoCollection<Document> books = dbc.getDatabase().getCollection("books");
+        Document result =  books.find(Filters.and(
+                Filters.eq("title", title),
+                Filters.eq("owner", owner))).first();
+
+
+        String display = null;
+        if (result != null) {
+            display = Book(result);
+
+        }else{
+            throw new Exception("Book does not exist");
+        }
+
+
+        dbc.close();
+
+        return display;
 
 
     }
-    //ToDO display by mostly borrowed from mesh lzm
-    //TODO display reviews for a book and overall  rating
 
-    //TODO handler
+
 }

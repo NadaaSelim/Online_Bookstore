@@ -1,33 +1,53 @@
 package org.example;
 
+import DB.DatabaseConnection;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
+
+import static java.lang.System.out;
 
 public class MessageServer {
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(5001); // Choose a port number
+        ServerSocket serverSocket = new ServerSocket(5001);
+        out.println("Message Server started on port 5001");
 
-        System.out.println("Message Server started on port 5001");
+        Map<String, String> pairs = new HashMap<>();
+        Map<String , Socket> waitingClients = new HashMap<>();
+
+        DatabaseConnection dbCon = new DatabaseConnection();
+
 
         while (true) {
-            // Accept connections from clients
-            Socket client1 = serverSocket.accept();
-            Socket client2 = serverSocket.accept();
+            Socket clientSocket = serverSocket.accept();
+            BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            String usernameAndFriend = in.readLine(); // read input isn the format: "[username],[friend's username]"
+            String[] s = usernameAndFriend.split(",");
+            String username = s[0].trim();
+            String friendUsername = s[1].trim();
+            pairs.put(username, friendUsername);
 
-            System.out.println("Client 1 connected from: " + client1.getInetAddress());
-            System.out.println("Client 2 connected from: " + client2.getInetAddress());
+            Socket friendSocket = waitingClients.remove(friendUsername);
+            if (friendSocket != null) {
+                out.println(username + " connected to " + friendUsername);
+                ClientHandler handler1 = new ClientHandler(clientSocket, friendSocket);
+                ClientHandler handler2 = new ClientHandler(friendSocket, clientSocket);
+                handler1.start();
+                handler2.start();
+            }
+            else {
+                out.println(friendUsername + " is not available for connection.");
+                out.println("wait for " + friendUsername + " to connect or type /end to exit.");
+                waitingClients.put(username, clientSocket); // Add client to waiting list
+            }
 
-            // Create threads to handle each client communication
-            ClientHandler handler1 = new ClientHandler(client1, client2);
-            ClientHandler handler2 = new ClientHandler(client2, client1);
-
-            handler1.start();
-            handler2.start();
         }
     }
 }
@@ -35,6 +55,8 @@ public class MessageServer {
 class ClientHandler extends Thread {
     private Socket clientSocket;
     private Socket peerSocket;
+
+
 
     public ClientHandler(Socket clientSocket, Socket peerSocket) {
         this.clientSocket = clientSocket;
@@ -53,7 +75,7 @@ class ClientHandler extends Thread {
                     break;
                 }
 
-                System.out.println( + clientSocket.getPort() + ": " + message);
+                System.out.println("Client " + clientSocket.getPort() + ": " + message);
                 out.println("Client " + clientSocket.getPort() + ": " + message);
             }
         } catch (IOException e) {

@@ -85,12 +85,11 @@ public class Client {
     public void message() throws IOException {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Enter username: ");
+        System.out.println("[your username],[friend's username]");
         String username = scanner.nextLine();
 
         Socket clientSocket = new Socket("127.0.0.1", 5001);
 
-        System.out.println("Connected to server!");
 
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);

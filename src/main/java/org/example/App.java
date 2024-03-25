@@ -64,6 +64,13 @@ public class App
 
 
 
+        System.out.println(dbCon.doesBookExist("nadaselim","Kafka on the shore"));
+        System.out.println(dbCon.isBookAvailable("nadaselim","Kafka on the shore"));
+        System.out.println(dbCon.insertRequest("janaselim","nadaselim", "The Stranger"));
+
+        
+
+
 
 
 

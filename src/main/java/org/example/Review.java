@@ -7,16 +7,17 @@ import com.mongodb.client.model.ReplaceOptions;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import java.io.Serializable;
 import java.util.List;
 
 import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 
-public class Review {
+public class Review  implements Serializable {
 
 
     //TODO all crud operations 1-add a review 2-retrieve reviews for a certain book 3-retrieve rating for statics
-    private int id;
+    private ObjectId id;
     private  String username;
     private String text;
     private int rating;         // from 0 till 1
@@ -26,10 +27,29 @@ public class Review {
 
     }
 
-    public Review(String text , int rating,String username) {
+    public Review(ObjectId id,String username,String text,int rating) {
+        this.id = id;
         this.text = text;
         this.rating = rating;
         this.username = username;
+
+    }
+
+    public Review(String text , int rating, String username) {
+        this.id = new ObjectId();
+        this.text = text;
+        this.rating = rating;
+        this.username = username;
+    }
+
+    public Review (Document review){
+
+        this.id =review.getObjectId("_id");
+        this.username = review.getString("username");
+        this.text = review.getString("review_text");
+        this.rating =review.getInteger("rating");
+
+
     }
 
 
@@ -50,6 +70,18 @@ public class Review {
         this.text = text;
     }
 
+    @Override
+    public String toString(){
+
+
+        return "Username: "+username+"\n"
+                +"Review: "+text+"\n"
+                +"Rating: "+rating+"\n";
+
+    }
+
+
+
     // TODO check rating is is in limit (handle exception)
     public boolean validRating(int rating) {
         return rating >= 1 && rating <= 5;
@@ -64,11 +96,11 @@ public class Review {
         }
 
         MongoCollection<Document> reviews = dbc.getDatabase().getCollection("reviews");
-        Document review = new Document("_id", new ObjectId());
+        Document review = new Document("_id", this.id);
         review.append("review_text", this.text)
                 .append("rating",this.rating)
                 .append("username",this.username);
-        reviews.insertOne(review);
+       // reviews.insertOne(review);
         Document query = new Document("title", title).append("owner", owner);
 
         MongoCollection<Document> books = dbc.getDatabase().getCollection("books");

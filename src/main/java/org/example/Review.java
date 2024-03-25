@@ -88,11 +88,11 @@ public class Review  implements Serializable {
     }
 
     //TODO handle request bas fe abl m3 call function addReview
-    public boolean addReview(String title , String owner,DatabaseConnection dbc) throws  IllegalStateException{
+    public boolean addReview(String title , String owner,DatabaseConnection dbc) throws  Exception{
 
         // 1- check rating
         if(!validRating(this.rating)){
-            throw new IllegalStateException("Cannot add review when canAddReview is false");
+            throw new Exception("Cannot add review Rating out of Range [1-5]");
         }
 
         MongoCollection<Document> reviews = dbc.getDatabase().getCollection("reviews");

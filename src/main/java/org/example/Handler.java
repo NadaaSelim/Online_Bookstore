@@ -41,7 +41,8 @@ public class Handler implements Runnable {
             "9- my_requests",
             "10- display by rating",
             "11- display by genre,[genre]",
-            "12- message");
+            "12- message",
+            "13-add review,[title],[owner],[review],[rating]");
 
 
     public Handler(Socket clientSocket, BufferedReader in, BufferedWriter out) {
@@ -162,6 +163,28 @@ public class Handler implements Runnable {
 
             return formatedList;
         }
+
+        private  boolean formatAccepted(List<String> booksList , String title,String owner){
+            int i = 1;
+            List<String> formatedList = new ArrayList<>();
+            for(String s: booksList){
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(s, JsonObject.class);
+
+                int status = jsonObject.get("status").getAsInt();
+                String titleac = jsonObject.get("title").getAsString();
+                String lender =jsonObject.get("lender").getAsString();
+                if(status == 1 &&  titleac.equals(title) && lender.equals(owner)) {
+
+                  return true;
+                }
+
+
+
+            }
+            return false;
+
+        }
     
         public List<String> handleinput(String input) {
             String inputParsed[]= input.split(",");
@@ -225,10 +248,36 @@ public class Handler implements Runnable {
                         return display.displayBooksWithRating(dbCon);
                     }
                     case "display by genre":{
-
+                        DatabaseConnection dbCon = new DatabaseConnection();
+                        return display.displayByGenre(dbCon,res[0]);
                     }
                     case "message":{
                         return List.of("Messaging ended");
+                    }
+                    case "add review":{
+                        DatabaseConnection dbCon = new DatabaseConnection();
+                        List<String> booksList = dbCon.getMyRequests(this.username);
+
+                        boolean canaddreview = formatAccepted(booksList,res[0],res[1]);
+                        if(canaddreview){
+                            Review review = new Review(res[2],Integer.parseInt(res[3]),this.username);
+                            try{
+                                review.addReview(res[0],res[1],dbCon);
+                            }
+                            catch (Exception e){
+                                System.out.println(e);
+
+                            }
+                        }
+                        else {
+                            throw new Exception("Request not approved");
+                        }
+
+                        dbCon.close();
+
+
+
+
                     }
 
 

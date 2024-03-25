@@ -4,7 +4,7 @@ import DB.DatabaseConnection;
 import junit.framework.TestCase;
 
 public class testReview extends TestCase {
-    public void testAddReview() {
+    public void testAddReview() throws Exception {
         // Create an instance of the Review class
        // Review review = new Review("good paper quality",5,"lama");
 

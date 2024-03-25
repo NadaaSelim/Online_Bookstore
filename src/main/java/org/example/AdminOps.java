@@ -1,4 +1,4 @@
-package org;
+package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,14 @@ import java.util.List;
 import DB.DatabaseConnection;
 
 public class AdminOps {
+    static String pass="1234"; 
     private DatabaseConnection db = new DatabaseConnection();
     
+    public void login(String pass) throws Exception{
+        if(!pass.equals(AdminOps.pass))     
+            throw new Exception("Wrong Password");   
+    }
+
     public List<String> viewLibStats(){
         long borrowed = db.getBorrowedBooksCnt();
         long available = db.getAllBooksCnt() - borrowed;

@@ -21,12 +21,15 @@ public class Handler implements Runnable {
     private UserAuth userAuth;
     private BookInv bookInv;
     private DisplayBooks display;
+    private AdminOps admin;
 
     // TODO class user??
     private String username=null;
-    
+    private boolean isAdmin = false;
+
     List<String> startMsg = List.of("Register or login using the following formats",
-    "register,[name],[user],[pass]","login,[user],[pass]");
+    "register,[name],[user],[pass]","login,[user],[pass]",
+    "login admin,[pass]");
 
     
     // Add rest of commands here
@@ -42,13 +45,14 @@ public class Handler implements Runnable {
             "10- display by rating",
             "11- display by genre,[genre]",
             "12- message",
-            "13-add review,[title],[owner],[review],[rating]");
+            "13- add review,[title],[owner],[review],[rating]");
 
 
     public Handler(Socket clientSocket, BufferedReader in, BufferedWriter out) {
         this.clientSocket = clientSocket;
         this.in = in; userAuth=new UserAuth(); bookInv=new BookInv();this.display=new DisplayBooks();
         this.out = out;
+        admin = new AdminOps();
 
     }
 
@@ -71,56 +75,59 @@ public class Handler implements Runnable {
     }
         catch(IOException e){e.printStackTrace();}
         String line = "";
-        while(this.username==(null)){
+        while(this.username==(null) && this.isAdmin==false){
             try {
-                System.out.println("Inside run method");
-                line=in.readLine();System.out.println("Client input: "+line);
+                line=in.readLine();
                 String res[] = line.split(",");
                 String message="";
+
                 if(res[0].equals("register")){
                     userAuth.register(res[1], res[2], res[3]);
                     this.username=res[2];
                     message=("Registration successful");}
+
                 else if(res[0].equals("login")){
                     userAuth.login(res[1],res[2]);this.username=res[1];
                     message="Login successful";
                     }
+                
+                else if (res[0].equals("login admin")){
+                    admin.login(res[1]);
+                    this.isAdmin = true;
+                    message="Login successful";
+                }
                 if(!message.equals("")){
                     List<String> stringList = new ArrayList<String>();
                     stringList.add(message);
-                    stringList.addAll(formatStandard);
-                   // stringList.addAll(formatStandard);
+                    if(isAdmin){
+                        stringList.add(formatStandard.get(0));
+                        stringList.add("1- view lib status");}
+                    else
+                        stringList.addAll(formatStandard);
                     writeToClient(stringList);
                 }
 
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 try {
                     writeToClient(List.of(e.getMessage()));
-                    //out.write(e.getMessage()); out.newLine();   out.flush();
 
                 } catch (IOException e1) {
-                    // TODO Auto-generated catch block
                     e1.printStackTrace();
                 }
             }
         }
         
         // reads message from client until "Over" is sent
-        while (!line.equals("Over")) {
+        while (!line.equals("/end")) {
             try {
                     line = in.readLine();
                     System.out.println(line);
                     List<String> res = handleinput(line);
                     writeToClient(res);
-                    // for(String []row:res){
-                    //     String temp="";
-                    //     for(String elem:row){ temp+=(elem+",");}
-                    //     out.write(temp); out.newLine();out.flush();
-                    // }
-            } catch (IOException i) {
+
+                } catch (IOException i) {
                     System.out.println(i);
             }catch(Exception e){e.printStackTrace();}
 
@@ -254,6 +261,9 @@ public class Handler implements Runnable {
                     case "message":{
                         return List.of("Messaging ended");
                     }
+                    case "view lib status":{
+                        return admin.viewLibStats();
+                    }
                     case "add review":{
                         DatabaseConnection dbCon = new DatabaseConnection();
                         List<String> booksList = dbCon.getMyRequests(this.username);
@@ -286,7 +296,6 @@ public class Handler implements Runnable {
             try {
                 writeToClient(List.of(e.getMessage()));
             } catch (IOException e1) {
-                // TODO Auto-generated catch block
                 e1.printStackTrace();
             }
         }

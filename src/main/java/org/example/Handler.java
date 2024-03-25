@@ -6,15 +6,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 
 public class Handler implements Runnable {
@@ -43,7 +40,8 @@ public class Handler implements Runnable {
             "8- reject,[title],[borrower]",
             "9- my_requests",
             "10- display by rating",
-            "11- display by genre,[genre]");
+            "11- display by genre,[genre]",
+            "12- message");
 
 
     public Handler(Socket clientSocket, BufferedReader in, BufferedWriter out) {
@@ -175,6 +173,7 @@ public class Handler implements Runnable {
                 switch(inputParsed[0]){
 
                 // TODO add options
+                    // TODO add case for /end
                     case "browse": {return bookInv.browse();}
                     case "search" : return bookInv.search(res);
                     case "add":  bookInv.add(this.username,res); return List.of("Book Added");
@@ -227,6 +226,9 @@ public class Handler implements Runnable {
                     }
                     case "display by genre":{
 
+                    }
+                    case "message":{
+                        return List.of("Messaging ended");
                     }
 
 

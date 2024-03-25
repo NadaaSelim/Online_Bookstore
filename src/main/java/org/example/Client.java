@@ -94,10 +94,10 @@ public class Client {
         BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
 
-        // Send username to server
+
         out.println(username);
 
-        // TODO stop when /end
+
         new Thread(() -> {
             while (true) {
                 String message = scanner.nextLine();

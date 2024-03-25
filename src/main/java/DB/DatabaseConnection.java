@@ -82,7 +82,13 @@ public class DatabaseConnection {
         return id;
     }
 
-    //TODO update friends list
+
+    public List<String> getFriends(String username) {
+        MongoCollection<Document> collection = this.database.getCollection("users");
+        Document doc = collection.find(eq("username", username)).first();
+        List<String> friends = (List<String>) doc.get("friends");
+        return friends;
+    }
 
     /////////////////////////   CRUD Operations for Book    /////////////////////////
     public List<String> getAllBooks() {

@@ -9,6 +9,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.System.out;
@@ -24,28 +25,43 @@ public class MessageServer {
 
         DatabaseConnection dbCon = new DatabaseConnection();
 
-
         while (true) {
             Socket clientSocket = serverSocket.accept();
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            String usernameAndFriend = in.readLine(); // read input isn the format: "[username],[friend's username]"
+            PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+
+            String usernameAndFriend = in.readLine();
             String[] s = usernameAndFriend.split(",");
             String username = s[0].trim();
             String friendUsername = s[1].trim();
-            pairs.put(username, friendUsername);
+            List<String> friends = dbCon.getFriends(username);
 
-            Socket friendSocket = waitingClients.remove(friendUsername);
-            if (friendSocket != null) {
-                out.println(username + " connected to " + friendUsername);
-                ClientHandler handler1 = new ClientHandler(clientSocket, friendSocket);
-                ClientHandler handler2 = new ClientHandler(friendSocket, clientSocket);
-                handler1.start();
-                handler2.start();
+            boolean found = false;
+            for (String friend : friends) {
+                if (friend.equals(friendUsername)) {
+                    found = true;
+                    break;
+                }
+            }
+            if(found) {
+
+                pairs.put(username, friendUsername);
+
+                Socket friendSocket = waitingClients.remove(friendUsername);
+                if (friendSocket != null) {
+                    out.println(username + " connected to " + friendUsername);
+                    ClientHandler handler1 = new ClientHandler(clientSocket, friendSocket, username, friendUsername);
+                    ClientHandler handler2 = new ClientHandler(friendSocket, clientSocket, friendUsername, username);
+                    handler1.start();
+                    handler2.start();
+                } else {
+                    out.println(friendUsername + " is not available for connection.");
+                    out.println("wait for " + friendUsername + " to connect or type /end to exit.");
+                    waitingClients.put(username, clientSocket);
+                }
             }
             else {
-                out.println(friendUsername + " is not available for connection.");
-                out.println("wait for " + friendUsername + " to connect or type /end to exit.");
-                waitingClients.put(username, clientSocket); // Add client to waiting list
+                out.println("You are not friends with " + friendUsername);
             }
 
         }
@@ -56,11 +72,16 @@ class ClientHandler extends Thread {
     private Socket clientSocket;
     private Socket peerSocket;
 
+    private String username;
+    private String friendUsername;
 
 
-    public ClientHandler(Socket clientSocket, Socket peerSocket) {
+
+    public ClientHandler(Socket clientSocket, Socket peerSocket, String username, String friendUsername) {
         this.clientSocket = clientSocket;
         this.peerSocket = peerSocket;
+        this.username = username;
+        this.friendUsername = friendUsername;
     }
 
     @Override
@@ -71,12 +92,12 @@ class ClientHandler extends Thread {
 
             while (true) {
                 String message = in.readLine();
-                if (message == null) {
+                if (message == null || message.equals("/end")) {
                     break;
                 }
 
-                System.out.println("Client " + clientSocket.getPort() + ": " + message);
-                out.println("Client " + clientSocket.getPort() + ": " + message);
+                System.out.println(username + ": " + message);
+                out.println(username + ": " + message);
             }
         } catch (IOException e) {
             System.err.println("Error communicating with client: " + e.getMessage());

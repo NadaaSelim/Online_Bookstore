@@ -8,10 +8,7 @@ import com.google.gson.JsonObject;
 
 import java.io.*;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class Handler implements Runnable {
@@ -273,9 +270,13 @@ public class Handler implements Runnable {
                             Review review = new Review(res[2],Integer.parseInt(res[3]),this.username);
                             try{
                                 review.addReview(res[0],res[1],dbCon);
+                                dbCon.close();
+
+
+                                return Collections.singletonList("Review is added");
                             }
                             catch (Exception e){
-                                System.out.println(e);
+                                return (List<String>) e;
 
                             }
                         }
@@ -283,7 +284,7 @@ public class Handler implements Runnable {
                             throw new Exception("Request not approved");
                         }
 
-                        dbCon.close();
+
 
 
 

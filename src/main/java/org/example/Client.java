@@ -121,8 +121,6 @@ public class Client {
         while (true) {
             String message = in.readLine();
             if (message == null || message.equals("/end")) {
-
-                // out.println("Connection ended");
                 break;
             }
             System.out.println(message);

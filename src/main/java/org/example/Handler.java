@@ -275,7 +275,7 @@ public class Handler implements Runnable {
                         }
                     }
                     case "message":{
-                        if(this.username == null || !isAdmin)
+                        if(this.username == null)
                             throw new Exception("You have not logged in yet");
                         return List.of("Messaging ended");
                     }

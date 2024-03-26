@@ -49,7 +49,6 @@ public class MessageServer {
 
                 Socket friendSocket = waitingClients.remove(friendUsername);
                 if (friendSocket != null) {
-                    out.println(username + " connected to " + friendUsername);
                     ClientHandler handler1 = new ClientHandler(clientSocket, friendSocket, username, friendUsername);
                     ClientHandler handler2 = new ClientHandler(friendSocket, clientSocket, friendUsername, username);
                     handler1.start();
@@ -64,7 +63,7 @@ public class MessageServer {
                 }
             }
             else {
-                out.println("You are not friends with " + friendUsername);
+                out.println("You are not friends with this user");
             }
 
         }
@@ -92,7 +91,7 @@ class ClientHandler extends Thread {
         try {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter out = new PrintWriter(peerSocket.getOutputStream(), true);
-
+            out.println("You are connected to " + username);
             while (true) {
                 String message = in.readLine();
                 if (message == null || message.equals("/end")) {

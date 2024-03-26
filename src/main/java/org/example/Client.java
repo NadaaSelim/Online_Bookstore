@@ -49,7 +49,7 @@ public class Client {
                 readListFromServer();
                 
                 }
-            catch(IOException i)
+            catch(IOException | InterruptedException i)
             {
                 System.out.println(i);
             }
@@ -82,7 +82,7 @@ public class Client {
        // return List.of(data.split("\\r?\\n"));
     }
 
-    public void message() throws IOException {
+    public void message() throws IOException, InterruptedException {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("[your username],[friend's username]");
@@ -96,12 +96,18 @@ public class Client {
 
 
         out.println(username);
+        String response = in.readLine();
+        System.out.println(response);
+        if (response.equals("You are not friends with this user")) {
+            clientSocket.close();
+            return;
+        }
 
 
         new Thread(() -> {
             while (true) {
                 try {
-                    String message = scanner.readLine();
+                    String message = scanner.nextLine();
                     out.println(message);
                     if (message.equals("/end")) {
                         break;
@@ -115,9 +121,11 @@ public class Client {
         while (true) {
             String message = in.readLine();
             if (message == null || message.equals("/end")) {
+
+                // out.println("Connection ended");
                 break;
             }
-            System.out.println("Received: " + message);
+            System.out.println(message);
         }
 
         clientSocket.close();

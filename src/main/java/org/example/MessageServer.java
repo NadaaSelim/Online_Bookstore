@@ -54,6 +54,9 @@ public class MessageServer {
                     ClientHandler handler2 = new ClientHandler(friendSocket, clientSocket, friendUsername, username);
                     handler1.start();
                     handler2.start();
+                    waitingClients.remove(friendUsername);
+                    waitingClients.remove(username);
+                    pairs.remove(username);
                 } else {
                     out.println(friendUsername + " is not available for connection.");
                     out.println("wait for " + friendUsername + " to connect or type /end to exit.");

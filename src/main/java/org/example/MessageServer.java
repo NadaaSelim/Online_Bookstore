@@ -95,6 +95,9 @@ class ClientHandler extends Thread {
             while (true) {
                 String message = in.readLine();
                 if (message == null || message.equals("/end")) {
+                    if(message.equals("/end")) {
+                        out.println("Your friend has disconnected enter /end to exit.");
+                    }
                     break;
                 }
 

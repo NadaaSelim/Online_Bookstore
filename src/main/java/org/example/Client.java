@@ -102,16 +102,26 @@ public class Client {
             while (true) {
                 String message = scanner.nextLine();
                 out.println(message);
+                if(message.equals("/end")){
+                    try{in.close();out.close(); break;
+                    }catch(Exception e){e.printStackTrace();}
+
+                }
             }
         }).start();
 
         while (true) {
             String message = in.readLine();
-            if (message == null) {
+            if (message == null ) {
                 break;
             }
 
             System.out.println(message);
+            if(message.equals("/end")){
+                try{in.close();out.close(); break;
+                }catch(Exception e){e.printStackTrace();}
+
+            }
         }
 
         clientSocket.close();

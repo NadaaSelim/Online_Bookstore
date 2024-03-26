@@ -76,24 +76,30 @@ public class Handler implements Runnable {
             try {
                 line=in.readLine();
                 String res[] = line.split(",");
-                String message="";
+                String message=""; boolean validinput=false;
 
                 if(res[0].equals("register")){
+                    if(res.length != 4)
+                        throw new Exception("Invalid Input.Try again");
                     userAuth.register(res[1], res[2], res[3]);
-                    this.username=res[2];
+                    this.username=res[2];validinput=true;
                     message=("Registration successful");}
 
                 else if(res[0].equals("login")){
+                    if(res.length != 3)
+                        throw new Exception("Invalid Input.Try again");
                     userAuth.login(res[1],res[2]);this.username=res[1];
-                    message="Login successful";
+                    message="Login successful"; validinput=true;
                     }
                 
                 else if (res[0].equals("login admin")){
-                    admin.login(res[1]);
+                    if(res.length != 2)
+                        throw new Exception("Invalid Input.Try again");
+                    admin.login(res[1]);validinput=true;
                     this.isAdmin = true;
                     message="Login successful";
                 }
-                if(!message.equals("")){
+                if(validinput){
                     List<String> stringList = new ArrayList<String>();
                     stringList.add(message);
                     if(isAdmin){
@@ -103,10 +109,12 @@ public class Handler implements Runnable {
                         stringList.addAll(formatStandard);
                     writeToClient(stringList);
                 }
+                else{
+                    throw new Exception("Invalid Input.Try again");
+                }
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (Exception e) {
+            } 
+            catch ( Exception e) {
                 try {
                     writeToClient(List.of(e.getMessage()));
 
@@ -204,7 +212,7 @@ public class Handler implements Runnable {
                     case "browse": {return bookInv.browse();}
                     case "search" : return bookInv.search(res);
                     case "add":  bookInv.add(this.username,res); return List.of("Book Added");
-                    case "remove": bookInv.remove(this.username,res[0]); return List.of("Book Removed");
+                    case "remove": bookInv.remove(this.username,res); return List.of("Book Removed");
                     case "request":{
                         Request req = new Request(res[0],res[1],this.username);
                         if(req.addToDB())
@@ -256,6 +264,8 @@ public class Handler implements Runnable {
                         return display.displayByGenre(dbCon,res[0]);
                     }
                     case "message":{
+                        if(this.username == null || !isAdmin)
+                            throw new Exception("You have not logged in yet");
                         return List.of("Messaging ended");
                     }
                     case "view lib status":{

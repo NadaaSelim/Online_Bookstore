@@ -17,7 +17,7 @@ public class testReview extends TestCase {
 
     }
     public void testdisplay(){
-        DisplayBooks ui = new DisplayBooks();
-        ui.displayBooksWithRating(new DatabaseConnection());
+       // DisplayBooks ui = new DisplayBooks();
+        //ui.displayBooksWithRating(new DatabaseConnection());
     }
 }

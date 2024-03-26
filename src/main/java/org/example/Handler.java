@@ -42,7 +42,8 @@ public class Handler implements Runnable {
             "10- display by rating",
             "11- display by genre,[genre]",
             "12- message",
-            "13- add review,[title],[owner],[review],[rating]");
+            "13- add review,[title],[owner],[review],[rating]",
+            "14- display book rating & reviews,[title],[owner]");
 
 
     public Handler(Socket clientSocket, BufferedReader in, BufferedWriter out) {
@@ -257,11 +258,21 @@ public class Handler implements Runnable {
                     }
                     case "display by rating":{
                         DatabaseConnection dbCon = new DatabaseConnection();
-                        return display.displayBooksWithRating(dbCon);
+                        try {
+                            return display.displayBooksWithRating(dbCon);
+                        }
+                        catch (Exception e){
+                            return List.of(e.getMessage());
+                        }
                     }
                     case "display by genre":{
                         DatabaseConnection dbCon = new DatabaseConnection();
-                        return display.displayByGenre(dbCon,res[0]);
+                        try {
+                            return display.displayByGenre(dbCon,res[0]);
+                        }
+                        catch (Exception e){
+                            return List.of(e.getMessage());
+                        }
                     }
                     case "message":{
                         if(this.username == null || !isAdmin)
@@ -286,17 +297,24 @@ public class Handler implements Runnable {
                                 return Collections.singletonList("Review is added");
                             }
                             catch (Exception e){
-                                return (List<String>) e;
+                                return List.of(e.getMessage());
 
                             }
                         }
                         else {
-                            throw new Exception("Request not approved");
+                            throw new Exception("Request not approved or book doesn't exists");
                         }
 
 
-
-
+                    }
+                    case"display book rating & reviews":{
+                        DatabaseConnection dbCon = new DatabaseConnection();
+                        try{
+                            return  List.of(display.displayReviews(dbCon,res[0],res[1]));
+                        }
+                        catch (Exception e){
+                            return List.of(e.getMessage());
+                        }
 
 
                     }

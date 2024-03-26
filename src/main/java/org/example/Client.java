@@ -44,7 +44,7 @@ public class Client {
                 
                 
                 line = input.readLine();
-                if(line.equals("message")){this.message();}
+                if(line.equals("message")){this.message(input);}
                 out.write(line); out.newLine();out.flush();
                 readListFromServer();
                 
@@ -82,11 +82,10 @@ public class Client {
        // return List.of(data.split("\\r?\\n"));
     }
 
-    public void message() throws IOException {
-        Scanner scanner = new Scanner(System.in);
+    public void message(BufferedReader scanner) throws IOException {
 
         System.out.println("[your username],[friend's username]");
-        String username = scanner.nextLine();
+        String username = scanner.readLine();
 
         Socket clientSocket = new Socket("127.0.0.1", 5001);
 
@@ -100,20 +99,38 @@ public class Client {
 
         new Thread(() -> {
             while (true) {
-                String message = scanner.nextLine();
-                out.println(message);
-            }
-        }).start();
+                try{
+                    String message = scanner.readLine();
+                    out.println(message);
+                    if(message.equals("/end")){
+                        in.close();out.close(); break;
+                    }
+                }catch(Exception e){e.printStackTrace();}
 
+                }
+            
+
+        }).start();
+        
         while (true) {
             String message = in.readLine();
-            if (message == null) {
-                break;
+            if (message == null  ) {
+                try{ 
+                    
+                  //in.readLine();
+                   in.close();out.close(); break;
+                }catch(Exception e){e.printStackTrace();}
+            }
+            System.out.println("Recieved:"+message);
+
+            if(message.equals("/end")){
+                try{ //System.out.println("/end recieved connection supposed to end");
+                   in.close();out.close(); break;
+                }catch(Exception e){e.printStackTrace();}
+
             }
 
-            System.out.println(message);
         }
-
         clientSocket.close();
     }
 

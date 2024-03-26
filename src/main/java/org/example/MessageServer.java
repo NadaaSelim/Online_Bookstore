@@ -92,11 +92,16 @@ class ClientHandler extends Thread {
 
             while (true) {
                 String message = in.readLine();
-                if (message == null || message.equals("/end")) {
+                if (message == null ) {
+                    in.close(); out.close();
                     break;
                 }
-
                 System.out.println(username + ": " + message);
+
+                if(message.equals("/end")){
+                    out.println(message); in.close();out.close();
+                    break;}
+
                 out.println(username + ": " + message);
             }
         } catch (IOException e) {

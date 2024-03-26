@@ -191,6 +191,8 @@ public class Handler implements Runnable {
         }
     
         public List<String> handleinput(String input) {
+            if(input==null)
+                return List.of("Null Input");
             String inputParsed[]= input.split(",");
             String[] res = Arrays.copyOfRange(inputParsed, 1, inputParsed.length);
 
@@ -291,8 +293,10 @@ public class Handler implements Runnable {
 
                     }
 
+                    default: return List.of("Invalid Input");
 
-            }
+
+                }
         }catch(Exception e){                    
             try {
                 writeToClient(List.of(e.getMessage()));

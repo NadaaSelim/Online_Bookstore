@@ -100,28 +100,24 @@ public class Client {
 
         new Thread(() -> {
             while (true) {
-                String message = scanner.nextLine();
-                out.println(message);
-                if(message.equals("/end")){
-                    try{in.close();out.close(); break;
-                    }catch(Exception e){e.printStackTrace();}
-
+                try {
+                    String message = scanner.readLine();
+                    out.println(message);
+                    if (message.equals("/end")) {
+                        break;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }).start();
 
         while (true) {
             String message = in.readLine();
-            if (message == null ) {
+            if (message == null || message.equals("/end")) {
                 break;
             }
-
-            System.out.println(message);
-            if(message.equals("/end")){
-                try{in.close();out.close(); break;
-                }catch(Exception e){e.printStackTrace();}
-
-            }
+            System.out.println("Received: " + message);
         }
 
         clientSocket.close();

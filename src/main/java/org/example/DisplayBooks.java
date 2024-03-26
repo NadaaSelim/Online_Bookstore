@@ -36,7 +36,7 @@ public class DisplayBooks {
      */
 
     //TODO remove NaN??
-    public List<String> displayBooksWithRating(DatabaseConnection dbc){
+    public List<String> displayBooksWithRating(DatabaseConnection dbc)throws Exception {
 
         MongoCollection<Document> bookscollection = dbc.getDatabase().getCollection("books");
 
@@ -45,6 +45,12 @@ public class DisplayBooks {
         List<String> booksList = new ArrayList<>();
 
         booksList = sortByrating(books);
+
+        if(booksList.isEmpty()){
+
+            throw new Exception("There is no books in inventory");
+
+        }
 
         dbc.close();
         return booksList;
@@ -99,9 +105,10 @@ public class DisplayBooks {
                 .projection(Projections.excludeId()).into(new ArrayList<>());
 
         List<String> booksList;
-        if (results != null) {
+        if (!results.isEmpty()) {
 
             booksList = sortByrating(results);
+            System.out.println(results);
         } else {
             throw new Exception("This genre does not exist");
         }
@@ -118,7 +125,12 @@ public class DisplayBooks {
 
 
         for(Document book:books){
-            bookRatings.put(book,overallRating(book));
+            double rating = overallRating(book);
+            if(Double.isNaN(rating)){
+                rating = 0.0;
+            }
+            bookRatings.put(book,rating);
+
 
             System.out.println(overallRating(book));
         }
@@ -148,7 +160,8 @@ public class DisplayBooks {
 
         String display = null;
         if (result != null) {
-            display = Book(result);
+            display = "Overall Rating : "+overallRating(result)+"\n";
+            display += Book(result);
 
         }else{
             throw new Exception("Book does not exist");

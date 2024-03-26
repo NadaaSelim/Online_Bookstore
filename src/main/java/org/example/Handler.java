@@ -111,7 +111,7 @@ public class Handler implements Runnable {
                     writeToClient(stringList);
                 }
                 else{
-                    throw new Exception("Invalid Input.Try again");
+                    throw new Exception("Invalid Command.Try again");
                 }
 
             } 
@@ -203,7 +203,6 @@ public class Handler implements Runnable {
             String inputParsed[]= input.split(",");
             String[] res = Arrays.copyOfRange(inputParsed, 1, inputParsed.length);
 
-            System.out.println(Arrays.toString(res)+'\t'+Arrays.toString(inputParsed));
 
             try{
                 switch(inputParsed[0]){
@@ -319,8 +318,9 @@ public class Handler implements Runnable {
 
                     }
 
-
-            }
+                    default: throw new Exception("Invalid Command.Try Again");                    
+                
+                }
         }catch(Exception e){                    
             try {
                 writeToClient(List.of(e.getMessage()));

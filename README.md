@@ -29,11 +29,11 @@ The Online Bookstore Project is an assignment for a Distributed Systems course. 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/NadaaSelim/distributed_assign1.git
+git clone https://github.com/NadaaSelim/Online_Bookstore.git
 ```
 2. Navigate to the project directory:
 ```bash
-cd distributed_assign1
+cd Online_Bookstore
 ```
 3. Database setup
 - Run mongodb
